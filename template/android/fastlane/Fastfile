@@ -1,0 +1,120 @@
+platform :android do
+  desc "Build a signed APK for a specific flavor"
+  lane :build_apk do |options|
+    flavor = options[:flavor] || "prod" # Default to prod if no flavor specified
+
+    # Read properties from gradle.properties
+    properties_file = "../gradle.properties"
+    signing_props = {}
+
+    if File.exist?(properties_file)
+      File.foreach(properties_file) do |line|
+        next if line.strip.empty? || line.start_with?('#')  # Skip empty lines and comments
+        key, value = line.split('=', 2)
+        signing_props[key.strip] = value.strip if key && value
+      end
+    else
+      UI.user_error!("Properties file not found: #{properties_file}")
+    end
+
+    # Construct absolute path for keystore file
+    keystore_relative_path = signing_props["MYAPP_UPLOAD_STORE_FILE"]
+    keystore_path = File.expand_path(File.join("../app", keystore_relative_path), Dir.pwd)
+
+    # Verify keystore exists
+    if File.exist?(keystore_path)
+      puts "Keystore found at: #{keystore_path}"
+    else
+      UI.user_error!("Keystore not found at: #{keystore_path}")
+    end
+
+    # ensure_git_status_clean
+    sh "cd .. && npm install && rm -rf app/.cxx && rm -rf app/build && cd .."
+    gradle(task: "clean", project_dir: "./")
+    gradle(
+      task: "assemble",
+      flavor: flavor.capitalize,
+      build_type: "Release",
+      project_dir: "./",
+      properties: {
+        "android.injected.signing.store.file" => keystore_path,
+        "android.injected.signing.store.password" => signing_props["MYAPP_UPLOAD_STORE_PASSWORD"],
+        "android.injected.signing.key.alias" => signing_props["MYAPP_UPLOAD_KEY_ALIAS"],
+        "android.injected.signing.key.password" => signing_props["MYAPP_UPLOAD_KEY_PASSWORD"]
+      }
+    )
+
+    # Output path for APK
+    apk_path = "android/app/build/outputs/apk/#{flavor}/release/app-#{flavor}-release.apk"
+    puts "APK built successfully at: #{apk_path}"
+  end
+
+  desc "Build a signed AAB for a specific flavor"
+  lane :build_aab do |options|
+    flavor = options[:flavor] || "prod" # Default to prod if no flavor specified
+
+    # Read properties from gradle.properties
+    properties_file = "../gradle.properties"
+    signing_props = {}
+
+    if File.exist?(properties_file)
+      File.foreach(properties_file) do |line|
+        next if line.strip.empty? || line.start_with?('#')  # Skip empty lines and comments
+        key, value = line.split('=', 2)
+        signing_props[key.strip] = value.strip if key && value
+      end
+    else
+      UI.user_error!("Properties file not found: #{properties_file}")
+    end
+
+    # Construct absolute path for keystore file
+    keystore_relative_path = signing_props["MYAPP_UPLOAD_STORE_FILE"]
+    keystore_path = File.expand_path(File.join("../app", keystore_relative_path), Dir.pwd)
+
+    # Verify keystore exists
+    if File.exist?(keystore_path)
+      puts "Keystore found at: #{keystore_path}"
+    else
+      UI.user_error!("Keystore not found at: #{keystore_path}")
+    end
+
+    # ensure_git_status_clean
+    sh "cd .. && npm install && rm -rf app/.cxx && rm -rf app/build && cd .."
+    gradle(task: "clean", project_dir: "./")
+    gradle(
+      task: "bundle",  # Changed to bundle for AAB
+      flavor: flavor.capitalize,
+      build_type: "Release",
+      project_dir: "./",
+      properties: {
+        "android.injected.signing.store.file" => keystore_path,
+        "android.injected.signing.store.password" => signing_props["MYAPP_UPLOAD_STORE_PASSWORD"],
+        "android.injected.signing.key.alias" => signing_props["MYAPP_UPLOAD_KEY_ALIAS"],
+        "android.injected.signing.key.password" => signing_props["MYAPP_UPLOAD_KEY_PASSWORD"]
+      }
+    )
+
+    # Output path for AAB
+    aab_path = "android/app/build/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab"
+    puts "AAB built successfully at: #{aab_path}"
+  end
+
+  desc "Build Dev APK"
+  lane :dev do
+    build_apk(flavor: "dev")
+  end
+
+  desc "Build UAT APK"
+  lane :uat do
+    build_apk(flavor: "uat")
+  end
+
+  desc "Build Prod APK or AAB"
+  lane :prod do |options|
+    if options[:aab]
+      build_aab(flavor: "prod")
+    else
+      build_apk(flavor: "prod")
+    end
+  end
+end

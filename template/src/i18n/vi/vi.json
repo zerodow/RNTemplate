@@ -1,0 +1,21 @@
+{
+  "common": {
+    "ok": "OK! vi",
+    "cancel": "Cancel vi",
+    "back": "Back vi",
+    "logOut": "Log Out vi",
+    "postscript": "hushuhuhu"
+  },
+  "welcomeScreen": {
+    "postscript": " vipsst  — This probably isn't what your app looks like. (Unless your designer handed you these screens, and in that case, ship it!)",
+    "readyForLaunch": " vi Your app, almost ready for launch!",
+    "exciting": " vi(ohh, this is exciting!)",
+    "letsGo": " viLet's go!"
+  },
+  "errorScreen": {
+    "title": " A sơn đẹp zai",
+    "friendlySubtitle": " viThis is the screen that your users will see in production when an error is thrown. You'll want to customize this message (located in `app/i18n/en.ts`) and probably the layout as well (`app/screens/ErrorScreen`). If you want to remove this entirely, check `app/app.tsx` for the <ErrorBoundary> component.",
+    "reset": " viRESET APP",
+    "traceTitle": " viError from %{name} stack"
+  }
+}

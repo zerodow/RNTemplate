@@ -1,0 +1,8 @@
+{
+  "name": "RNTemplate",
+  "version": "0.0.5",
+  "description": "React Native Template",
+  "repository": "https://github.com/zerodow/RNTemplate.git",
+  "author": "Kelvin <minhducc96@gmail.com>",
+  "license": "MIT"
+}
